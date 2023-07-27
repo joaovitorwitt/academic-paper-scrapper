@@ -1,0 +1,8 @@
+header {
+  background-color: antiquewhite;
+  padding: 2.5rem 0;
+}
+
+.header-wrapper > h3 {
+  text-align: center;
+}
