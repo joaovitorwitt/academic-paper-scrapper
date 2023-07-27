@@ -1,3 +1,9 @@
-.form-wrapper {
-  margin-top: 3rem;
+.form {
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+.input-row {
+  display: flex;
+  flex-direction: column;
 }
