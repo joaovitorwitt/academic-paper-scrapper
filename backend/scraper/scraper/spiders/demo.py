@@ -2,7 +2,7 @@ from pathlib import Path
 import scrapy
 import json
 import sys
-from main import get_user_input, search_books
+from utils import helper
 
 """
     Scrapy documentation for reference
@@ -50,11 +50,27 @@ class BooksSpider(scrapy.Spider):
                 "isAvailable": result 
             }
 
-    def parse(self, response):
-        book = search_books()
 
-        for link in response.css("a").get():
-            yield {
-                "link": link.css("a::attr(title)")
-            }
+    def parse(self, response):
+        book = helper.search_books()
+        book_list = []
+        returned_book = ""
+
+        for element in response.css("article.product_pod"):
+            book_list.append(element.css("h3 > a::attr(title)").get())
+
+        returned_book = [bk for bk in book_list if book.lower() in bk.lower()]
+
+        yield {
+            "link" : returned_book
+        }
+            
+
+        # for element in response.css("article.product_pod"):
+        #     yield {
+        #         "link" : element.css("h3 > a::attr(title)").get(),
+        #         "book" : book
+        #     }
+
+            
 
