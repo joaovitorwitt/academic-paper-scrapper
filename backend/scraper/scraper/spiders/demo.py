@@ -49,42 +49,37 @@ class BooksSpider(scrapy.Spider):
                 "price": book.css("div.product_price > p.price_color::text").get(),
                 "isAvailable": result 
             }
-
-
-    # def parse(self, response):
-    #     book = helper.search_books()
-    #     book_list = []
-    #     returned_book = ""
-
-    #     for element in response.css("article.product_pod"):
-    #         book_list.append(element.css("h3 > a::attr(title)").get())
-
-    #     returned_book = [bk for bk in book_list if book.lower() in bk.lower()]
-
-    #     yield {
-    #         "link" : returned_book
-    #     }
-
             
+
+
     def parse(self, response):
         book_searched = helper.get_user_input("enter book: ")
         books_list = []
 
         for books in response.css("article.product_pod"):
-            books_list.append(books.css("h3 > a::attr(title)").get())
+            book_title = books.css("h3 > a::attr(title)").get()
+            books_list.append(book_title)
 
-        matching_books = [book for book in books_list if book_searched.lower() in book.lower()]
+            if book_searched in book_title.lower():
+                book_page = books.css("h3 > a::attr(href)").get()
+                if book_page:
+                    yield response.follow(book_page, callback=self.parse)
+                    return  # Return to prevent further processing of the response
 
         yield {
-            "matched_books": matching_books
+            "matched_books": books_list,
         }
 
-        """
-            get input from user
-            search through list of books in the html
-            look for matches
-            return the results
-        """
+        # matching_books = [book for book in books_list if book_searched.lower() in book.lower()]
+
+        # yield {
+        #     "matched_books": matching_books
+        # }
+
+        # book_page = response.css(f"a::title({matching_books[0]})").get()
+
+        # if book_page is not None:
+        #     yield response.follow(book_page, callback=self.parse)
 
             
 
