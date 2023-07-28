@@ -3,6 +3,7 @@ import scrapy
 import json
 import sys
 from utils import helper
+import re
 
 """
     Scrapy documentation for reference
@@ -55,31 +56,28 @@ class BooksSpider(scrapy.Spider):
     def parse(self, response):
         book_searched = helper.get_user_input("enter book: ")
         books_list = []
-
+        found_books = False
         for books in response.css("article.product_pod"):
             book_title = books.css("h3 > a::attr(title)").get()
-            books_list.append(book_title)
 
             if book_searched in book_title.lower():
-                book_page = books.css("h3 > a::attr(href)").get()
+                book_page = re.sub(r'^<Request\s(GET|POST|PUT|DELETE|HEAD)\s(.*?)>$',r'\2',books.css("h3 > a::attr(href)").get())
                 if book_page:
-                    yield response.follow(book_page, callback=self.parse)
-                    return  # Return to prevent further processing of the response
+                    books_list.append(book_title)
+                    found_books = True
+                    yield {
+                        "link" : response.follow(book_page, callback=self.parse),
+                        "title": book_title
+                    }
 
-        yield {
-            "matched_books": books_list,
-        }
-
-        # matching_books = [book for book in books_list if book_searched.lower() in book.lower()]
-
-        # yield {
-        #     "matched_books": matching_books
-        # }
-
-        # book_page = response.css(f"a::title({matching_books[0]})").get()
-
-        # if book_page is not None:
-        #     yield response.follow(book_page, callback=self.parse)
-
-            
+        if not found_books:
+            yield {
+                "response": "book not found"
+            }
+        else:
+            yield {
+                "list_of_books": books_list
+            }
+    
+    # TODO - create dictionary to store the titles and its corresponding links
 
