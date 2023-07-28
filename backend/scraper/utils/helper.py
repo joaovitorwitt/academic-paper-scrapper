@@ -7,7 +7,7 @@ import time
 def get_user_input(prompt):
     while True:
         try:
-            string = input(prompt)
+            string = input(prompt).strip()
             return string
         except:
             print("Something went wrong")
