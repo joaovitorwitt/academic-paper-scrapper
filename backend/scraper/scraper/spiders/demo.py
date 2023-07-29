@@ -35,6 +35,7 @@ class BooksSpider(scrapy.Spider):
             }
 
 
+
     def parse_books(self, response):
         for book in response.css("ol.row li.col-xs-6 article.product_pod"):
             is_available = str(book.css("div.product_price > p.instock").get())
@@ -59,6 +60,12 @@ class BooksSpider(scrapy.Spider):
         found_books = False
         for books in response.css("article.product_pod"):
             book_title = books.css("h3 > a::attr(title)").get()
+            is_available = str(books.css("div.product_price > p.instock").get())
+
+            if "in stock" in is_available.lower():
+                result = True
+            else:
+                result = False
 
             if book_searched in book_title.lower():
                 book_page = re.sub(r'^<Request\s(GET|POST|PUT|DELETE|HEAD)\s(.*?)>$',r'\2',books.css("h3 > a::attr(href)").get())
@@ -67,7 +74,9 @@ class BooksSpider(scrapy.Spider):
                     found_books = True
                     yield {
                         "link" : response.follow(book_page, callback=self.parse),
-                        "title": book_title
+                        "title": book_title,
+                        "is_available" : result,
+                        "price": books.css("div.product_price > p.price_color::text").get(),
                     }
 
         if not found_books:
